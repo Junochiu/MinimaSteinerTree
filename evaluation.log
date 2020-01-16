@@ -1,0 +1,9 @@
+17:53:04 [INFO] b01.stp STARTS
+17:53:04 [INFO] Python was not found but can be installed from the Microsoft Store: https://go.microsoft.com/fwlink?linkID=2082640
+17:53:04 [INFO] Time:  0.37851   Cost:     82.0
+17:53:04 [INFO] b02.stp STARTS
+17:53:05 [INFO] Python was not found but can be installed from the Microsoft Store: https://go.microsoft.com/fwlink?linkID=2082640
+17:53:05 [INFO] Time:  0.33760   Cost:     14.0
+17:53:05 [INFO] i640-002.stp STARTS
+17:53:05 [INFO] Python was not found but can be installed from the Microsoft Store: https://go.microsoft.com/fwlink?linkID=2082640
+17:53:05 [INFO] Time:  0.34120   Cost:   6963.0

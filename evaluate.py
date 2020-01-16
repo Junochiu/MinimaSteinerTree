@@ -4,8 +4,23 @@ import time
 import glob
 import math
 import logging
+import platform
 import subprocess
 import networkx as nx
+
+
+TIMEOUT = 10
+OUTPUT = "output"
+SCORE = "score"
+# For Linux and maybe MacOS
+file_suffix = ""
+command_prefix = "./"
+exec_program_shell = False
+# For Windows
+if platform.system() == "Windows":
+    file_suffix = ".exe"
+    command_prefix = ""
+    exec_program_shell = True
 
 
 def validate_classical(output, testcase):
@@ -62,6 +77,7 @@ def validate_classical(output, testcase):
             break
     res["cost"] = 0
     for e1, e2 in out_G.edges():
+        print("edge {e1} - {e2} ".format(e1=e1,e2=e2))
         res["cost"] += G[e1][e2]["weight"]
     return res
 
@@ -141,7 +157,8 @@ def validate_euclidean(output, testcase):
 
 def exec_program(args):
     p = subprocess.Popen(
-        args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        shell=exec_program_shell)
     try:
         ts = time.perf_counter()
         stdouts, stderrs = p.communicate(timeout=TIMEOUT)
@@ -190,85 +207,90 @@ def score(score_file, res, testcase_name):
             testcase_name, -1.0, -1.0))
 
 
-# Init evaluation parameters
-TIMEOUT = 10
-OUTPUT = "output"
-SCORE = "score"
-score_file = open(os.path.join(SCORE, "score.txt"), "w")
-logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s',
-                    datefmt='%H:%M:%S',
-                    level=logging.INFO,
-                    handlers=[
-                        logging.FileHandler("evaluation.log", mode='w'),
-                        logging.StreamHandler(sys.stdout)])
+def run_all():
+    # Init working dir
+    os.makedirs(OUTPUT, exist_ok=True)
+    os.makedirs(SCORE, exist_ok=True)
 
-# Init working dir
-os.makedirs(OUTPUT, exist_ok=True)
-os.makedirs(SCORE, exist_ok=True)
+    # Init evaluation parameters
+    score_file = open(os.path.join(SCORE, "score.txt"), "w")
+    logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s',
+                        datefmt='%H:%M:%S',
+                        level=logging.INFO,
+                        handlers=[
+                            logging.FileHandler("evaluation.log", mode='w'),
+                            logging.StreamHandler(sys.stdout)])
 
-# Find necessary files
-exec_list = glob.glob("*")
-classical_testlist = glob.glob(os.path.join("testcase", "classical", "*.stp"))
-euclidean_testlist = glob.glob(os.path.join("testcase", "euclidean", "*.stp"))
-classical_testlist = sorted(classical_testlist)
-euclidean_testlist = sorted(euclidean_testlist)
+    # Find necessary files
+    exec_list = glob.glob("*")
+    classical_testlist = glob.glob(
+        os.path.join("testcase", "classical", "*.stp"))
+    euclidean_testlist = glob.glob(
+        os.path.join("testcase", "euclidean", "*.stp"))
+    classical_testlist = sorted(classical_testlist)
+    euclidean_testlist = sorted(euclidean_testlist)
 
-# Makefile
-if "Makefile" in exec_list:
-    p = subprocess.run(
-        'make', stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    logging.info(p.stdout.decode("utf-8"))
 
-# Classic Steiner Tree
-is_classic_c = "classical" in exec_list
-is_classic_py = "classical.py" in exec_list
 
-if is_classic_c:
-    for testcase in classical_testlist:
-        testcase_name = os.path.basename(testcase)
-        logging.info("{} STARTS".format(testcase_name))
-        args = ["./classical", testcase, testcase+".terminals"]
-        te = exec_program(args)
-        out = os.path.join(OUTPUT, testcase_name+".outputs")
-        res = validate_classical(out, testcase)
-        res["time"] = te
-        score(score_file, res, testcase_name)
+    # Classic Steiner Tree
+    exec_list = glob.glob("*")
+    is_classic_c = "classical{}".format(file_suffix) in exec_list
+    is_classic_py = "classical.py" in exec_list
 
-if is_classic_py and not is_classic_c:
-    for testcase in classical_testlist:
-        testcase_name = os.path.basename(testcase)
-        logging.info("{} STARTS".format(testcase_name))
-        args = ["python3", "classical.py", testcase, testcase+".terminals"]
-        te = exec_program(args)
-        out = os.path.join(OUTPUT, testcase_name+".outputs")
-        res = validate_classical(out, testcase)
-        res["time"] = te
-        score(score_file, res, testcase_name)
+    if is_classic_c:
+        for testcase in classical_testlist:
+            testcase_name = os.path.basename(testcase)
+            logging.info("{} STARTS".format(testcase_name))
+            args = ["{}classical".format(command_prefix),
+                    testcase,
+                    testcase+".terminals"]
+            te = exec_program(args)
+            out = os.path.join(OUTPUT, testcase_name+".outputs")
+            res = validate_classical(out, testcase)
+            res["time"] = te
+            score(score_file, res, testcase_name)
 
-# Euclidean Steiner Tree
-is_euclidean_c = "euclidean" in exec_list
-is_euclidean_py = "euclidean.py" in exec_list
+    if is_classic_py and not is_classic_c:
+        for testcase in classical_testlist:
+            testcase_name = os.path.basename(testcase)
+            logging.info("{} STARTS".format(testcase_name))
+            args = ["python3", "classical.py", testcase, testcase+".terminals"]
+            te = exec_program(args)
+            out = os.path.join(OUTPUT, testcase_name+".outputs")
+            res = validate_classical(out, testcase)
+            res["time"] = te
+            score(score_file, res, testcase_name)
+    '''
+    # Euclidean Steiner Tree
+    is_euclidean_c = "euclidean{}".format(file_suffix) in exec_list
+    is_euclidean_py = "euclidean.py" in exec_list
 
-if is_euclidean_c:
-    for testcase in euclidean_testlist:
-        testcase_name = os.path.basename(testcase)
-        logging.info("{} STARTS".format(testcase_name))
-        args = ["./euclidean", testcase]
-        te = exec_program(args)
-        out = os.path.join(OUTPUT, testcase_name+".outputs")
-        res = validate_euclidean(out, testcase)
-        res["time"] = te
-        score(score_file, res, testcase_name)
+    if is_euclidean_c:
+        for testcase in euclidean_testlist:
+            testcase_name = os.path.basename(testcase)
+            logging.info("{} STARTS".format(testcase_name))
+            args = ["{}euclidean".format(command_prefix),
+                    testcase]
+            te = exec_program(args)
+            out = os.path.join(OUTPUT, testcase_name+".outputs")
+            res = validate_euclidean(out, testcase)
+            res["time"] = te
+            score(score_file, res, testcase_name)
 
-if is_euclidean_py and not is_euclidean_c:
-    for testcase in euclidean_testlist:
-        testcase_name = os.path.basename(testcase)
-        logging.info("{} STARTS".format(testcase_name))
-        args = ["python3", "euclidean.py", testcase]
-        te = exec_program(args)
-        out = os.path.join(OUTPUT, testcase_name+".outputs")
-        res = validate_euclidean(out, testcase)
-        res["time"] = te
-        score(score_file, res, testcase_name)
+    if is_euclidean_py and not is_euclidean_c:
+        for testcase in euclidean_testlist:
+            testcase_name = os.path.basename(testcase)
+            logging.info("{} STARTS".format(testcase_name))
+            args = ["python3", "euclidean.py", testcase]
+            te = exec_program(args)
+            out = os.path.join(OUTPUT, testcase_name+".outputs")
+            res = validate_euclidean(out, testcase)
+            res["time"] = te
+            score(score_file, res, testcase_name)
+    '''
+    score_file.close()
 
-score_file.close()
+
+if __name__ == "__main__":
+    run_all()
+
