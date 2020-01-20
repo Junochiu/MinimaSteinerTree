@@ -1,12 +1,12 @@
 import sys
 import networkx as nx
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import os
-import time
+#import time
 
 
 def find_shortest_pth_between_terminals(G, terminals):
-    tic = time.time()
+    #tic = time.time()
     '''
     create full connections between terminals first
     then update the path if a shorter version found
@@ -26,7 +26,7 @@ def find_shortest_pth_between_terminals(G, terminals):
                     G.add_edge(u, v, weight=w, path=[u, v])
                     ter_G.add_edge(u, v, weight=w, path=[u, v])
     currentweight = ter_G.size(weight='weight')
-    print("current weight {}".format(currentweight))
+    #print("current weight {}".format(currentweight))
     newweight = 0
     # terminal for the terminal currently working on
     terminal_idx = 0
@@ -39,7 +39,7 @@ def find_shortest_pth_between_terminals(G, terminals):
         # for ter_node in terminals:
         # for each terminal node
         # visited = []
-        print("current weight {}".format(currentweight))
+        #print("current weight {}".format(currentweight))
         path = []
         stack = []
         numsofwalk = 0
@@ -97,7 +97,7 @@ def find_shortest_pth_between_terminals(G, terminals):
                 for i in path:
                     if i != -1:
                         terpath.append(i)
-                print("path from {e1} to {e2} ".format(e1=ter_node, e2=cur_node))
+                #print("path from {e1} to {e2} ".format(e1=ter_node, e2=cur_node))
                 for i in range(len(terpath) - 1):
                     newcost = newcost + G[terpath[i]][terpath[i + 1]]['weight']
                 # print("newcost={}".format(newcost))
@@ -135,10 +135,6 @@ def find_shortest_pth_between_terminals(G, terminals):
                     path.pop()
                 if len(path) != 0 and path[-1] == -1:
                     path.pop()
-        if len(stack) == 0:
-            print("beacuse of stack empty")
-        else:
-            print("because run too many times")
         terminal_idx = (terminal_idx + 1) % len(terminals)
         ter_node = terminals[terminal_idx]
         newweight = ter_G.size(weight='weight')
@@ -146,8 +142,8 @@ def find_shortest_pth_between_terminals(G, terminals):
         if abs((currentweight - newweight)) < 0.01 * currentweight:
             break
         currentweight = newweight
-    toc = time.time()
-    print("finding shortestpath {}".format(toc - tic))
+    #toc = time.time()
+    #print("finding shortestpath {}".format(toc - tic))
     # drawing the graph
     '''
     pos = nx.spring_layout(G)
@@ -168,7 +164,7 @@ def find_shortest_pth_between_terminals(G, terminals):
 
 
 def min_spanning_tree(ter_G):
-    tic = time.time()
+    #tic = time.time()
     tmp_adj_matrix = []
     tmp_adj_matrix_node = []
     adj_matrix = nx.to_numpy_array(ter_G)
@@ -204,8 +200,8 @@ def min_spanning_tree(ter_G):
     # nx.draw_networkx_edge_labels(ter_G, pos, edge_labels=labels)
     plt.show()
     '''
-    toc = time.time()
-    print("MST1 {}".format(toc - tic))
+    #toc = time.time()
+    #print("MST1 {}".format(toc - tic))
     return spanningtree
 
 
@@ -243,7 +239,7 @@ def mergeSort(edgelist):
 
 
 def min_spanning_tree_1(ter_G):
-    tic = time.time()
+    #tic = time.time()
     edgelist = []
     for edge in ter_G.edges:
         nodedata = []
@@ -288,13 +284,13 @@ def min_spanning_tree_1(ter_G):
     nx.draw_networkx_labels(spanning, pos, font_size=10, font_family='sans-serif')
     plt.show()
     '''
-    toc = time.time()
-    print("spanning1 {}".format(toc - tic))
+    #toc = time.time()
+    #print("spanning1 {}".format(toc - tic))
     return spanning
 
 
 def min_spanning_tree_3(ter_G):
-    tic = time.time()
+    #tic = time.time()
     edgelist = []
     for edge in ter_G.edges:
         nodedata = []
@@ -338,13 +334,13 @@ def min_spanning_tree_3(ter_G):
     nx.draw_networkx_labels(spanning, pos, font_size=10, font_family='sans-serif')
     plt.show()
     '''
-    toc = time.time()
-    print("spanning {}".format(toc - tic))
+    #toc = time.time()
+    #print("spanning {}".format(toc - tic))
     return spanning
 
 
 def to_graph_with_steiner_points(tree, G):
-    tic = time.time()
+    #tic = time.time()
     stein_G = nx.Graph()
     for u in tree.nodes:
         # print("node {}".format(u))
@@ -362,13 +358,13 @@ def to_graph_with_steiner_points(tree, G):
     nx.draw_networkx_labels(stein_G, pos, font_size=10, font_family='sans-serif')
     plt.show()
     '''
-    toc = time.time()
-    print("to steiner {}".format(toc - tic))
+    #toc = time.time()
+    #print("to steiner {}".format(toc - tic))
     return stein_G
 
 
 def main():
-    tStart = time.time()
+    #tStart = time.time()
     steinertree_file = open(sys.argv[1], "r")
     terminals_file = open(sys.argv[2], "r")
     G = nx.Graph()
@@ -416,8 +412,8 @@ def main():
         outputfile.write(out)
     outputfile.close()
 
-    tEnd = time.time()
-    print("time {}".format(tEnd - tStart))
+    #tEnd = time.time()
+    #print("time {}".format(tEnd - tStart))
 
 
 if __name__ == '__main__':
